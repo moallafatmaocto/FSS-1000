@@ -1,6 +1,6 @@
 import click
 
-from training import main
+from src.training import main
 
 
 @click.command()

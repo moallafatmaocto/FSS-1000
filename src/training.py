@@ -1,5 +1,4 @@
 import math
-import math
 import os
 import random
 
@@ -10,9 +9,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 
-from data_preprocessing.batch_generator import get_training_batch
-from display_data import decode_segmap
-from network import RelationNetwork, CNNEncoder
+from src.data_preprocessing.batch_generator import get_training_batch
+from src.display_data import decode_segmap
+from src.network import RelationNetwork, CNNEncoder
 
 
 def weights_init(m):

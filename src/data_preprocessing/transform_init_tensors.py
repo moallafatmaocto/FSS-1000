@@ -15,6 +15,7 @@ def transform_to_tensors(query_images, query_labels, support_images, support_lab
 
 
 def init_arrays(class_num, sample_num_per_class, batch_num_per_class):
+    # TODO : test this function
     support_images = np.zeros((class_num * sample_num_per_class, 3, 224, 224), dtype=np.float32)
     support_labels = np.zeros((class_num * sample_num_per_class, class_num, 224, 224), dtype=np.float32)
     query_images = np.zeros((class_num * batch_num_per_class, 3, 224, 224), dtype=np.float32)
@@ -25,6 +26,7 @@ def init_arrays(class_num, sample_num_per_class, batch_num_per_class):
 
 
 def normalize_and_transpose(image):
+    # TODO: test this function
     image = image[:, :, ::-1]  # bgr to rgb
     image = image / 255.0
     image = np.transpose(image, (2, 0, 1))

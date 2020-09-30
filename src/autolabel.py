@@ -7,8 +7,8 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-from data_preprocessing.batch_generator import get_autolabel_batch
-from network import CNNEncoder, RelationNetwork
+from src.data_preprocessing.batch_generator import get_autolabel_batch
+from src.network import CNNEncoder, RelationNetwork
 
 parser = argparse.ArgumentParser(description="One Shot Visual Recognition")
 parser.add_argument("-f", "--feature_dim", type=int, default=64)
@@ -25,8 +25,8 @@ parser.add_argument("-d", "--display_query_num", type=int, default=5)
 parser.add_argument("-t", "--test_class", type=int, default=1)
 parser.add_argument("-modelf", "--feature_encoder_model", type=str, default='models/feature_encoder.pkl')
 parser.add_argument("-modelr", "--relation_network_model", type=str, default='models/relation_network.pkl')
-parser.add_argument("-sd", "--support_dir", type=str, default='data/african_elephant/supp')
-parser.add_argument("-td", "--test_dir", type=str, default='data/african_elephant/test')
+parser.add_argument("-sd", "--support_dir", type=str, default='test_data/african_elephant/supp')
+parser.add_argument("-td", "--test_dir", type=str, default='test_data/african_elephant/test')
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(np.argmax([int(x.split()[2]) \
@@ -70,8 +70,8 @@ def maskimg(img, mask, edge, color=[0, 0, 255], alpha=0.5):
 
 
 def main():
-    # Step 1: init data folders
-    print("init data folders")
+    # Step 1: init test_data folders
+    print("init test_data folders")
     # init character folders for dataset construction
     # metatrain_character_folders,metatest_character_folders = tg.omniglot_character_folders()
 

@@ -3,7 +3,7 @@ import random
 
 import cv2
 
-from data_preprocessing.transform_init_tensors import init_arrays, normalize_and_transpose, import_image_and_label, transform_to_tensors
+from src.data_preprocessing.transform_init_tensors import init_arrays, normalize_and_transpose, import_image_and_label, transform_to_tensors
 
 
 def get_training_batch(class_num, sample_num_per_class, batch_num_per_class):  # shuffle in query_images not done
