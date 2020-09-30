@@ -7,8 +7,8 @@ from src.autolabel import main
 @click.option('--class-num', '-N', default=1, type=int, required=True)
 @click.option('--sample-num-per_class', '-K', default=5, type=int, required=True)
 @click.option('--batch-num-per_class', default=1, type=int)
-@click.option('--encoder-save-path', '-encoder', type=str, default='feature_encoder_trained')
-@click.option('--network-save-path', '-network', type=str, default='relation_network_trained')
+@click.option('--encoder-save-path', '-encoder', type=str, default='models/feature_encoder.pkl')
+@click.option('--network-save-path', '-network', type=str, default='models/relation_network.pkl')
 @click.option('--use-gpu', default=False, type=bool)
 @click.option('--gpu', default=0, type=int)
 @click.option("-sd", "--support-dir", type=str, default='test_data/african_elephant/supp')
@@ -20,5 +20,6 @@ def entry_point_test(class_num: int, sample_num_per_class: int, batch_num_per_cl
          network_save_path,
          use_gpu, gpu, support_dir, test_dir)
 
-    if __name__ == '__main__':
-        entry_point_test()
+
+if __name__ == '__main__':
+    entry_point_test()
