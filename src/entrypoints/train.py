@@ -22,15 +22,16 @@ from src.training import main
 @click.option('--model-save-freq', type=int, default=10, help='frequency of saving the model')
 @click.option('--display-query', type=int, default=5, help='Number of test displayed')
 @click.option('--gpu', type=int, default=0, help='GPU to use')
+@click.option('--load-imagenet', type=bool, default=True, help='Pretrain or not the encoder')
 def entry_point(finetune: bool, feature_model: str, relation_model: str, learning_rate: int,
                 start_episode: int, nbr_episode: int, class_num: int, sample_num_per_class: int,
                 batch_num_per_class: int, train_result_path: str, model_save_path: str,
-                result_save_freq: int, display_query: int, model_save_freq: int, gpu: int):
+                result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool):
     main(finetune, feature_model, relation_model, learning_rate,
          start_episode, nbr_episode, class_num,
          sample_num_per_class,
          batch_num_per_class, train_result_path, model_save_path,
-         result_save_freq, display_query, model_save_freq, gpu)
+         result_save_freq, display_query, model_save_freq, gpu, load_imagenet)
 
 
 if __name__ == '__main__':

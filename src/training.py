@@ -33,11 +33,11 @@ def weights_init(m):
 def main(finetune: bool, feature_model: str, relation_model: str, learning_rate: int,
          start_episode: int, nbr_episode: int, class_num: int, sample_num_per_class: int,
          batch_num_per_class: int, train_result_path: str, model_save_path: str,
-         result_save_freq: int, display_query: int, model_save_freq: int, gpu: int):
+         result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool):
     # Step 1: init neural networks
     print("init neural networks")
 
-    feature_encoder = CNNEncoder(pretrained=args.loadImagenet)
+    feature_encoder = CNNEncoder(pretrained=load_imagenet)
     relation_network = RelationNetwork()
 
     relation_network.apply(weights_init)
