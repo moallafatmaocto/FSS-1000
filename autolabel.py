@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
+from data_preprocessing.batch_generator import get_autolabel_batch
 from network import CNNEncoder, RelationNetwork
 
 parser = argparse.ArgumentParser(description="One Shot Visual Recognition")
@@ -47,62 +48,6 @@ DISPLAY_QUERY = args.display_query_num
 TEST_CLASS = args.test_class
 FEATURE_MODEL = args.feature_encoder_model
 RELATION_MODEL = args.relation_network_model
-
-
-def get_oneshot_batch(testname):  # shuffle in query_images not done
-    # classes_name = os.listdir('./%s' % args.support_dir)
-    # classes_name = ['android_robot', 'bucket_water' , 'nintendo_gameboy']
-
-    support_images = np.zeros((CLASS_NUM * SAMPLE_NUM_PER_CLASS, 3, 224, 224), dtype=np.float32)
-    support_labels = np.zeros((CLASS_NUM * SAMPLE_NUM_PER_CLASS, CLASS_NUM, 224, 224), dtype=np.float32)
-    query_images = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, 3, 224, 224), dtype=np.float32)
-    query_labels = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, CLASS_NUM, 224, 224), dtype=np.float32)
-    zeros = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, 1, 224, 224), dtype=np.float32)
-    class_cnt = 0
-
-    # print ('class %s is chosen' % i)
-    # classnames = ['english_foxhound', 'guitar']
-    imgnames = os.listdir('./%s/label' % args.support_dir)
-    # print (args.support_dir, imgnames)
-    testnames = os.listdir('%s' % args.test_dir)
-    indexs = list(range(0, len(imgnames)))[0:5]
-    chosen_index = indexs
-    j = 0
-    for k in chosen_index:
-        # process image
-        image = cv2.imread('%s/image/%s' % (args.support_dir, imgnames[k].replace('.png', '.jpg')))
-        if image is None:
-            raise Exception('cannot load image ')
-
-        image = image[:, :, ::-1]  # bgr to rgb
-        image = image / 255.0
-        image = np.transpose(image, (2, 0, 1))
-        # labels
-        # print ('%s/label/%s' % (args.support_dir, imgnames[k]))
-        label = cv2.imread('%s/label/%s' % (args.support_dir, imgnames[k]))[:, :, 0]
-
-        support_images[k] = image
-        support_labels[k][0] = label
-
-    testimage = cv2.imread('%s/%s' % (args.test_dir, testname))
-    testimage = cv2.resize(testimage, (224, 224))
-    testimage = testimage[:, :, ::-1]  # bgr to rgb
-    testimage = testimage / 255.0
-    testimage = np.transpose(testimage, (2, 0, 1))
-
-    query_images[0] = testimage
-
-    class_cnt += 1
-    support_images_tensor = torch.from_numpy(support_images)
-    support_labels_tensor = torch.from_numpy(support_labels)
-    support_images_tensor = torch.cat((support_images_tensor, support_labels_tensor), dim=1)
-
-    zeros_tensor = torch.from_numpy(zeros)
-    query_images_tensor = torch.from_numpy(query_images)
-    query_images_tensor = torch.cat((query_images_tensor, zeros_tensor), dim=1)
-    query_labels_tensor = torch.from_numpy(query_labels)
-
-    return support_images_tensor, support_labels_tensor, query_images_tensor, query_labels_tensor
 
 
 def maskimg(img, mask, edge, color=[0, 0, 255], alpha=0.5):
@@ -177,7 +122,9 @@ def main():
         if cv2.imread('%s/%s' % (args.test_dir, testname)) is None:
             continue
 
-        samples, sample_labels, batches, batch_labels = get_oneshot_batch(testname)
+        samples, sample_labels, batches, batch_labels = get_autolabel_batch(testname, CLASS_NUM, SAMPLE_NUM_PER_CLASS,
+                                                                            BATCH_NUM_PER_CLASS, args.support_dir,
+                                                                            args.test_dir)
 
         # forward
         sample_features, _ = feature_encoder(Variable(samples).cuda(GPU))

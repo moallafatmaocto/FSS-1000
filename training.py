@@ -10,6 +10,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 
+from data_preprocessing.batch_generator import get_training_batch
 from display_data import decode_segmap
 from network import RelationNetwork, CNNEncoder
 
@@ -71,56 +72,6 @@ def weights_init(m):
         m.bias.data = torch.ones(m.bias.data.size())
 
 
-def get_oneshot_batch():  # shuffle in query_images not done
-    # classes.remove(EXCLUDE_CLASS)
-    classes_name = os.listdir('./fewshot/support/')
-    classes = list(range(0, len(classes_name)))
-
-    chosen_classes = random.sample(classes, CLASS_NUM)
-    support_images = np.zeros((CLASS_NUM * SAMPLE_NUM_PER_CLASS, 3, 224, 224), dtype=np.float32)
-    support_labels = np.zeros((CLASS_NUM * SAMPLE_NUM_PER_CLASS, CLASS_NUM, 224, 224), dtype=np.float32)
-    query_images = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, 3, 224, 224), dtype=np.float32)
-    query_labels = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, CLASS_NUM, 224, 224), dtype=np.float32)
-    zeros = np.zeros((CLASS_NUM * BATCH_NUM_PER_CLASS, 1, 224, 224), dtype=np.float32)
-    class_cnt = 0
-    for i in chosen_classes:
-        # print ('class %s is chosen' % i)
-        imgnames = os.listdir('./fewshot/support/%s/label' % classes_name[i])
-        indexs = list(range(0, len(imgnames)))
-        chosen_index = random.sample(indexs, SAMPLE_NUM_PER_CLASS + BATCH_NUM_PER_CLASS)
-        j = 0
-        for k in chosen_index:
-            # process image
-            image = cv2.imread('./fewshot/support/%s/image/%s' % (classes_name[i], imgnames[k].replace('.png', '.jpg')))
-            if image is None:
-                print('./fewshot/support/%s/image/%s' % (classes_name[i], imgnames[k].replace('.png', '.jpg')))
-                # stop
-            image = image[:, :, ::-1]  # bgr to rgb
-            image = image / 255.0
-            image = np.transpose(image, (2, 0, 1))
-            # labels
-            label = cv2.imread('./fewshot/support/%s/label/%s' % (classes_name[i], imgnames[k]))[:, :, 0]
-            if j < SAMPLE_NUM_PER_CLASS:
-                support_images[j] = image
-                support_labels[j][0] = label
-            else:
-                query_images[j - SAMPLE_NUM_PER_CLASS] = image
-                query_labels[j - SAMPLE_NUM_PER_CLASS][class_cnt] = label
-            j += 1
-
-        class_cnt += 1
-    support_images_tensor = torch.from_numpy(support_images)
-    support_labels_tensor = torch.from_numpy(support_labels)
-    support_images_tensor = torch.cat((support_images_tensor, support_labels_tensor), dim=1)
-
-    zeros_tensor = torch.from_numpy(zeros)
-    query_images_tensor = torch.from_numpy(query_images)
-    query_images_tensor = torch.cat((query_images_tensor, zeros_tensor), dim=1)
-    query_labels_tensor = torch.from_numpy(query_labels)
-
-    return support_images_tensor, support_labels_tensor, query_images_tensor, query_labels_tensor, chosen_classes
-
-
 def main():
     # Step 1: init neural networks
     print("init neural networks")
@@ -161,7 +112,9 @@ def main():
         feature_encoder_scheduler.step(episode)
         relation_network_scheduler.step(episode)
 
-        samples, sample_labels, batches, batch_labels, chosen_classes = get_oneshot_batch()
+        samples, sample_labels, batches, batch_labels, chosen_classes = get_training_batch(CLASS_NUM,
+                                                                                           SAMPLE_NUM_PER_CLASS,
+                                                                                           BATCH_NUM_PER_CLASS)
 
         # calculate features
         sample_features, _ = feature_encoder(Variable(samples).cuda(GPU))
