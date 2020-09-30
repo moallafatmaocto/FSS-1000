@@ -27,10 +27,15 @@ parser.add_argument("-modelf", "--feature_encoder_model", type=str, default='mod
 parser.add_argument("-modelr", "--relation_network_model", type=str, default='models/relation_network.pkl')
 parser.add_argument("-sd", "--support_dir", type=str, default='test_data/african_elephant/supp')
 parser.add_argument("-td", "--test_dir", type=str, default='test_data/african_elephant/test')
+parser.add_argument("--use_gpu", type=bool, default=False)
+
 args = parser.parse_args()
 
-os.environ["CUDA_VISIBLE_DEVICES"] = str(np.argmax([int(x.split()[2]) \
-                                                    for x in subprocess.Popen("nvidia-smi -q -d Memory |\
+USE_GPU = args.use_gpu
+
+if USE_GPU:
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(np.argmax([int(x.split()[2]) \
+                                                        for x in subprocess.Popen("nvidia-smi -q -d Memory |\
                                     grep -A4 GPU | grep Free", shell=True, stdout=subprocess.PIPE).stdout.readlines()]))
 
 # Hyper Parameters
@@ -81,16 +86,17 @@ def main():
     feature_encoder = CNNEncoder()
     relation_network = RelationNetwork()
 
-    feature_encoder.cuda(GPU)
-    relation_network.cuda(GPU)
+    if USE_GPU:
+        feature_encoder.cuda(GPU)
+        relation_network.cuda(GPU)
 
     if os.path.exists(FEATURE_MODEL):
-        feature_encoder.load_state_dict(torch.load(FEATURE_MODEL))
+        feature_encoder.load_state_dict(torch.load(FEATURE_MODEL, map_location=torch.device('cpu')))
         print("load feature encoder success")
     else:
         raise Exception('Can not load feature encoder: %s' % FEATURE_MODEL)
     if os.path.exists(RELATION_MODEL):
-        relation_network.load_state_dict(torch.load(RELATION_MODEL))
+        relation_network.load_state_dict(torch.load(RELATION_MODEL, map_location=torch.device('cpu')))
         print("load relation network success")
     else:
         raise Exception('Can not load relation network: %s' % RELATION_MODEL)
@@ -127,10 +133,18 @@ def main():
                                                                             args.test_dir)
 
         # forward
-        sample_features, _ = feature_encoder(Variable(samples).cuda(GPU))
+        if USE_GPU:
+            sample_features, _ = feature_encoder(Variable(samples).cuda(GPU))
+        else:
+            sample_features, _ = feature_encoder(Variable(samples))
+
         sample_features = sample_features.view(CLASS_NUM, SAMPLE_NUM_PER_CLASS, 512, 7, 7)
         sample_features = torch.sum(sample_features, 1).squeeze(1)  # 1*512*7*7
-        batch_features, ft_list = feature_encoder(Variable(batches).cuda(GPU))
+        if USE_GPU:
+            batch_features, ft_list = feature_encoder(Variable(batches).cuda(GPU))
+        else:
+            batch_features, ft_list = feature_encoder(Variable(batches))
+
         sample_features_ext = sample_features.unsqueeze(0).repeat(BATCH_NUM_PER_CLASS * CLASS_NUM, 1, 1, 1, 1)
         batch_features_ext = batch_features.unsqueeze(0).repeat(CLASS_NUM, 1, 1, 1, 1)
         batch_features_ext = torch.transpose(batch_features_ext, 0, 1)
