@@ -1,0 +1,7 @@
+pip
+numpy
+torch
+torchvision
+click
+opencv-python
+

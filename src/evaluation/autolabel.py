@@ -1,30 +1,14 @@
 import os
-import os
 import subprocess
+
 import cv2
 import numpy as np
 import torch
 from torch.autograd import Variable
+
 from src.data_preprocessing.batch_generator import get_autolabel_batch
+from src.display_data import maskimg
 from src.network import CNNEncoder, RelationNetwork
-
-def maskimg(img, mask, edge, color=[0, 0, 255], alpha=0.5):
-    '''
-    img: cv2 image
-    mask: bool or np.where
-    color: BGR triplet [_, _, _]. Default: [0, 255, 255] is yellow.
-    alpha: float [0, 1].
-
-    Ref: http://www.pyimagesearch.com/2016/03/07/transparent-overlays-with-opencv/
-    '''
-    out = img.copy()
-    img_layer = img.copy()
-    img_layer[mask == 255] = color
-    edge_layer = img.copy()
-    edge_layer[edge == 255] = color
-    out = cv2.addWeighted(edge_layer, 1, out, 0, 0, out)
-    out = cv2.addWeighted(img_layer, alpha, out, 1 - alpha, 0, out)
-    return (out)
 
 
 def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path, network_save_path,
@@ -72,7 +56,6 @@ def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path
     print('%s testing images in class %s' % (len(testnames), classname))
 
     for cnt, testname in enumerate(testnames):
-
         print('%s / %s' % (cnt, len(testnames)))
         print(testname)
         if cv2.imread('%s/%s' % (test_dir, testname)) is None:
