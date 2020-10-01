@@ -14,57 +14,57 @@ from src.network import CNNEncoder, RelationNetwork
 
 def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path, network_save_path,
          use_gpu, gpu, support_dir, test_dir, result_dir):
-
     # Step 1: init neural networks and feature encoder
     print("init neural networks")
     feature_encoder, relation_network = init_enoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu)
-
     # Step 2: init result folder
     classname = support_dir
     init_result_path(classname, result_dir)
-
+    stick = np.zeros((224 * 4, 224 * 5, 3), dtype=np.uint8)
     # Step 3: Testing
     print("Testing...")
     testnames = os.listdir('%s' % test_dir)
     print('%s testing images in class %s' % (len(testnames), classname))
-    stick = np.zeros((224 * 4, 224 * 5, 3), dtype=np.uint8)
     for cnt, testname in enumerate(testnames):
-        print('%s / %s' % (cnt, len(testnames)))
-        print(testname)
         if cv2.imread('%s/%s' % (test_dir, testname)) is None:
             continue
-
+        # Step 3a: Get samples and batches (or support and query split)
         samples, sample_labels, batches, batch_labels = get_autolabel_batch(testname, class_num, sample_num_per_class,
-                                                                        batch_num_per_class, support_dir, test_dir)
-
-        # forward
+                                                                            batch_num_per_class, support_dir, test_dir)
+        # Step 3b: Predict the new label
         ft_list, relation_pairs = get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_num,
                                                                           feature_encoder, gpu, sample_num_per_class,
                                                                           samples, use_gpu)
         output = relation_network(relation_pairs, ft_list).view(-1, class_num, 224, 224)
+        # Step 3c: Evaluate the new label
+        classiou, stick, batch_index = compute_iou_for_query(batch_labels, batches, output, stick, testname)
+        # Step 3d: Visualize the autolabled mask and the image
+        visualize_support_images_and_masks(classname, cnt, result_dir, sample_labels, samples)
+        visualize_batch_images_and_masks(batch_index, batches, classname, cnt, result_dir, stick)
 
-        classiou, stick, batch_index  = compute_iou_for_query(batch_labels, batches, output, stick)
 
-        # visulization
-        if (cnt == 0):
-            for j in range(0, samples.size()[0]):
-                suppimg = np.transpose(samples.numpy()[j][0:3], (1, 2, 0))[:, :, ::-1] * 255
-                supplabel = np.transpose(sample_labels.numpy()[j], (1, 2, 0))
-                supplabel = cv2.cvtColor(supplabel, cv2.COLOR_GRAY2RGB)
-                supplabel = (supplabel * 255).astype(np.uint8)
-                suppedge = cv2.Canny(supplabel, 1, 1)
-
-                cv2.imwrite('./%s/%s/supp%s.png' % (result_dir, classname, j),
+def visualize_support_images_and_masks(classname, cnt, result_dir, sample_labels, samples):
+    if cnt == 0:
+        for j in range(0, samples.size()[0]):
+            suppimg = np.transpose(samples.numpy()[j][0:3], (1, 2, 0))[:, :, ::-1] * 255
+            supplabel = np.transpose(sample_labels.numpy()[j], (1, 2, 0))
+            supplabel = cv2.cvtColor(supplabel, cv2.COLOR_GRAY2RGB)
+            supplabel = (supplabel * 255).astype(np.uint8)
+            suppedge = cv2.Canny(supplabel, 1, 1)
+            cv2.imwrite('./%s/%s/supp%s.png' % (result_dir, classname, j),
                         maskimg(suppimg, supplabel.copy()[:, :, 0], suppedge, color=[0, 255, 0]))
-        testimg = np.transpose(batches.numpy()[0][0:3], (1, 2, 0))[:, :, ::-1] * 255
-        testlabel = stick[224 * 3:224 * 4, 224 * batch_index:224 * (batch_index + 1), :].astype(np.uint8)
-        testedge = cv2.Canny(testlabel, 1, 1)
-        cv2.imwrite('./%s/%s/test%s_raw.png' % (result_dir, classname, cnt), testimg)  # raw image
-        cv2.imwrite('./%s/%s/test%s.png' % (result_dir, classname, cnt),
+
+
+def visualize_batch_images_and_masks(batch_index, batches, classname, cnt, result_dir, stick):
+    testimg = np.transpose(batches.numpy()[0][0:3], (1, 2, 0))[:, :, ::-1] * 255
+    testlabel = stick[224 * 3:224 * 4, 224 * batch_index:224 * (batch_index + 1), :].astype(np.uint8)
+    testedge = cv2.Canny(testlabel, 1, 1)
+    cv2.imwrite('./%s/%s/test%s_raw.png' % (result_dir, classname, cnt), testimg)  # raw image
+    cv2.imwrite('./%s/%s/test%s.png' % (result_dir, classname, cnt),
                 maskimg(testimg, testlabel.copy()[:, :, 0], testedge))
 
 
-def compute_iou_for_query(batch_labels, batches, output, stick):
+def compute_iou_for_query(batch_labels, batches, output, stick, testname):
     classiou = 0
     for i in range(0, batches.size()[0]):
         # get prediction
@@ -79,9 +79,9 @@ def compute_iou_for_query(batch_labels, batches, output, stick):
         pred = pred.astype(bool)
         # compute IOU
         iou_score = iou(pred, testlabel)
-        print('iou=%0.4f' % iou_score)
         classiou += iou_score
     classiou /= 1.0 * batches.size()[0]
+    print('iou=%0.4f for %s' % (classiou, testname))
     return classiou, stick, i
 
 
