@@ -1,6 +1,6 @@
 import click
 
-from src.autolabel import main
+from src.evaluation.autolabel import main
 
 
 @click.command()
@@ -13,12 +13,14 @@ from src.autolabel import main
 @click.option('--gpu', default=0, type=int)
 @click.option("-sd", "--support-dir", type=str, default='test_data/african_elephant/supp')
 @click.option("-td", "--test-dir", type=str, default='test_data/african_elephant/test')
+@click.option("--result-dir", type=str, default='result')
+
 def entry_point_test(class_num: int, sample_num_per_class: int, batch_num_per_class: int, encoder_save_path: str,
                      network_save_path: str,
-                     use_gpu: bool, gpu: int, support_dir: str, test_dir: str):
+                     use_gpu: bool, gpu: int, support_dir: str, test_dir: str,result_dir:str):
     main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path,
          network_save_path,
-         use_gpu, gpu, support_dir, test_dir)
+         use_gpu, gpu, support_dir, test_dir,result_dir)
 
 
 if __name__ == '__main__':
