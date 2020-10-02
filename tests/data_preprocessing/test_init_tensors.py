@@ -53,13 +53,13 @@ class TestInitTensors(TestCase):
 
     def test_normalize_and_transpose_returns_the_right_shape_and_colors(self):
         # Given
-        old_image = np.ones((2, 5, 3)) * [5, 200, 110] # rgb
+        old_image = np.ones((2, 5, 3)) * [5, 200, 110]  # rgb
         # When
         image = normalize_and_transpose(old_image)
         # Then
         expected_image_size = np.shape(np.ones((3, 2, 5)))
         expected_image_colors = [110 / 255., 200 / 255., 5 / 255.]
         self.assertEqual(expected_image_size, np.shape(image))
-        self.assertEqual(expected_image_colors[0], image[0, 0, 0]) #b
-        self.assertEqual(expected_image_colors[1], image[1, 0, 0]) #g
-        self.assertEqual(expected_image_colors[2], image[2, 0, 0]) #r
+        self.assertEqual(expected_image_colors[0], image[0, 0, 0])  # b
+        self.assertEqual(expected_image_colors[1], image[1, 0, 0])  # g
+        self.assertEqual(expected_image_colors[2], image[2, 0, 0])  # r

@@ -1,6 +1,6 @@
 import click
 
-from src.training import main
+from src.train_module.training import main
 
 
 @click.command()
@@ -10,10 +10,10 @@ from src.training import main
 @click.option('--learning-rate', '-lr', default=0.001, type=float, help='Learning rate of the optimiser')
 @click.option('--start-episode', '-start', default=0, type=int, help='Start episode when training')
 @click.option('--nbr-episode', '-episode', default=10, type=int, help='Number of episodes when training')
-@click.option('--class-num', '-N', type=int, required=True, help='Number of classes to train, i.e N-way')
-@click.option('--sample-num-per_class', '-K', type=int, required=True,
+@click.option('--class-num', '-N', type=int, default=1, help='Number of classes to train, i.e N-way')
+@click.option('--sample-num-per_class', '-K', type=int, default=5,
               help='Number of images per class to train , i.e K-shot')
-@click.option('--batch-num-per_class', '-batch', type=int, default=3, help='Number of batches per image')
+@click.option('--batch-num-per_class', '-batch', type=int, default=1, help='Number of batches per image')
 @click.option('--train-result-path', type=str, default='results_predicted_images_masks',
               help='Path of the results after training')
 @click.option('--model-save-path', type=str, default='relation_network_trained',
