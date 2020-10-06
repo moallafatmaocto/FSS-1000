@@ -15,7 +15,6 @@ def transform_to_tensors(query_images, query_labels, support_images, support_lab
 
 
 def init_arrays(class_num, sample_num_per_class, batch_num_per_class):
-
     support_images = np.zeros((class_num * sample_num_per_class, 3, 224, 224), dtype=np.float32)
     support_labels = np.zeros((class_num * sample_num_per_class, class_num, 224, 224), dtype=np.float32)
     query_images = np.zeros((class_num * batch_num_per_class, 3, 224, 224), dtype=np.float32)
@@ -37,6 +36,13 @@ def import_image_and_label(image_path, label_path):
     if image is None:
         print(image_path)
         raise Exception('cannot load image ')
+
+    if np.shape(image)[1] != 224 or np.shape(image)[0] != 224:
+        image = cv2.resize(image, dsize=(224, 224), interpolation=cv2.INTER_CUBIC)
+
     image = normalize_and_transpose(image)
     label = cv2.imread(label_path)[:, :, 0]
+    if np.shape(label)[1] != 224 or np.shape(label)[0] != 224:
+        label = cv2.resize(label, dsize=(224, 224), interpolation=cv2.INTER_CUBIC)
+
     return image, label
