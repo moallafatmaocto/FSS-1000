@@ -33,12 +33,13 @@ def weights_init(m):
 def main(finetune: bool, feature_model: str, relation_model: str, learning_rate: int,
          start_episode: int, nbr_episode: int, class_num: int, sample_num_per_class: int,
          batch_num_per_class: int, train_result_path: str, model_save_path: str,
-         result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool):
+         result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool, use_gpu: bool,
+         train_data_path: str):
     # Step 1: init neural networks
     print("init neural networks")
 
     feature_encoder, feature_encoder_optim, feature_encoder_scheduler, relation_network, relation_network_optim, relation_network_scheduler = init_encoder_and_network_for_training(
-        feature_model, finetune, gpu, learning_rate, load_imagenet, nbr_episode, relation_model)
+        feature_model, finetune, gpu, learning_rate, load_imagenet, nbr_episode, relation_model, use_gpu)
 
     print("Training...")
     last_accuracy = 0.0
@@ -48,12 +49,13 @@ def main(finetune: bool, feature_model: str, relation_model: str, learning_rate:
         relation_network_scheduler.step(episode)
         samples, sample_labels, batches, batch_labels, chosen_classes = get_training_batch(class_num,
                                                                                            sample_num_per_class,
-                                                                                           batch_num_per_class)
+                                                                                           batch_num_per_class,
+                                                                                           train_data_path)
         ft_list, relation_pairs = get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_num,
                                                                           feature_encoder, gpu, sample_num_per_class,
-                                                                          samples)
+                                                                          samples, use_gpu)
         output = relation_network(relation_pairs, ft_list).view(-1, class_num, 224, 224)
-        loss = evaluate_loss(batch_labels, gpu, output)
+        loss = evaluate_loss(batch_labels, gpu, output, use_gpu)
         # training
         feature_encoder.zero_grad()
         relation_network.zero_grad()
@@ -80,9 +82,14 @@ def init_saving_folders(model_save_path, train_result_path):
         os.makedirs(model_save_path)
 
 
-def evaluate_loss(batch_labels, gpu, output):
-    mse = nn.MSELoss().cuda(gpu)
-    loss = mse(output, Variable(batch_labels).cuda(gpu))
+def evaluate_loss(batch_labels, gpu, output, use_gpu):
+    if use_gpu:
+        mse = nn.MSELoss().cuda(gpu)
+        loss = mse(output, Variable(batch_labels).cuda(gpu))
+    else:
+        mse = nn.MSELoss()
+        loss = mse(output, Variable(batch_labels))
+
     return loss
 
 
@@ -148,12 +155,20 @@ def save_trained_network_model_and_feature_encoder(class_num, episode, feature_e
 
 
 def get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_num, feature_encoder, gpu,
-                                            sample_num_per_class, samples):
+                                            sample_num_per_class, samples, use_gpu):
     # calculate features
-    sample_features, _ = feature_encoder(Variable(samples).cuda(gpu))
+    if use_gpu:
+        sample_features, _ = feature_encoder(Variable(samples).cuda(gpu))
+    else:
+        sample_features, _ = feature_encoder(Variable(samples))
+
     sample_features = sample_features.view(class_num, sample_num_per_class, 512, 7, 7)
     sample_features = torch.sum(sample_features, 1).squeeze(1)  # 1*512*7*7
-    batch_features, ft_list = feature_encoder(Variable(batches).cuda(gpu))
+    if use_gpu:
+        batch_features, ft_list = feature_encoder(Variable(batches).cuda(gpu))
+    else:
+        batch_features, ft_list = feature_encoder(Variable(batches))
+
     # calculate relations
     sample_features_ext = sample_features.unsqueeze(0).repeat(batch_num_per_class * class_num, 1, 1, 1, 1)
     batch_features_ext = batch_features.unsqueeze(0).repeat(class_num, 1, 1, 1, 1)
@@ -163,12 +178,15 @@ def get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_
 
 
 def init_encoder_and_network_for_training(feature_model, finetune, gpu, learning_rate, load_imagenet, nbr_episode,
-                                          relation_model):
+                                          relation_model, use_gpu):
     feature_encoder = CNNEncoder(pretrained=load_imagenet)
     relation_network = RelationNetwork()
     relation_network.apply(weights_init)
-    feature_encoder.cuda(gpu)
-    relation_network.cuda(gpu)
+
+    if use_gpu:
+        feature_encoder.cuda(gpu)
+        relation_network.cuda(gpu)
+
     # fine-tuning
     if (finetune):
         if os.path.exists(feature_model):

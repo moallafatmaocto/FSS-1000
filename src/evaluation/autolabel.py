@@ -16,7 +16,7 @@ def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path
          use_gpu, gpu, support_dir, test_dir, result_dir):
     # Step 1: init neural networks and feature encoder
     print("init neural networks")
-    feature_encoder, relation_network = init_enoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu)
+    feature_encoder, relation_network = init_encoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu)
     # Step 2: init result folder
     classname = support_dir
     init_result_path(classname, result_dir)
@@ -115,7 +115,7 @@ def init_result_path(classname, result_dir):
         os.makedirs('./%s/%s' % (result_dir, classname))
 
 
-def init_enoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu):
+def init_encoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu):
     if use_gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(np.argmax([int(x.split()[2]) \
                                                             for x in subprocess.Popen("nvidia-smi -q -d Memory |\
@@ -139,5 +139,3 @@ def init_enoder_and_network(encoder_save_path, gpu, network_save_path, use_gpu):
     return feature_encoder, relation_network
 
 
-if __name__ == '__main__':
-    main()

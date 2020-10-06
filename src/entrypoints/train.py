@@ -1,7 +1,9 @@
 import click
 
+from src.data_preprocessing.config import TRAIN_DATA_PATH
 from src.train_module.training import main
-
+import warnings
+warnings.filterwarnings("ignore")
 
 @click.command()
 @click.option('--finetune', default=True, type=bool, help='Finetuning the results')
@@ -20,18 +22,21 @@ from src.train_module.training import main
               help='Path of the relation network after training')
 @click.option('--result-save-freq', type=int, default=10, help='frequency of saving the results')
 @click.option('--model-save-freq', type=int, default=10, help='frequency of saving the model')
-@click.option('--display-query', type=int, default=5, help='Number of test displayed')
+@click.option('--display-query', type=int, default=1, help='Number of test displayed')
 @click.option('--gpu', type=int, default=0, help='GPU to use')
 @click.option('--load-imagenet', type=bool, default=True, help='Pretrain or not the encoder')
+@click.option('--use-gpu', default=False, type=bool)
+@click.option('--train-data-path', type=str, default=TRAIN_DATA_PATH)
 def entry_point(finetune: bool, feature_model: str, relation_model: str, learning_rate: int,
                 start_episode: int, nbr_episode: int, class_num: int, sample_num_per_class: int,
                 batch_num_per_class: int, train_result_path: str, model_save_path: str,
-                result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool):
+                result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool,
+                use_gpu: bool, train_data_path: str):
     main(finetune, feature_model, relation_model, learning_rate,
          start_episode, nbr_episode, class_num,
          sample_num_per_class,
          batch_num_per_class, train_result_path, model_save_path,
-         result_save_freq, display_query, model_save_freq, gpu, load_imagenet)
+         result_save_freq, display_query, model_save_freq, gpu, load_imagenet, use_gpu, train_data_path)
 
 
 if __name__ == '__main__':

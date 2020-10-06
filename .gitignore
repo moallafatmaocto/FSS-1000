@@ -1,6 +1,10 @@
 result/
 models/
+results_predicted_images_masks/
+relation_network_trained/
 .idea/
 .DS_Store
 data/
-
+imgs/example_demo/
+imgs/example_octo/
+imgs/example_ChestXR/
