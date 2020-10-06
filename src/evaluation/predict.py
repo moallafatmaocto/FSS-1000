@@ -26,14 +26,14 @@ def main(class_num, sample_num_per_class, batch_num_per_class, model_save_path,
         samples, sample_labels, batches, batch_labels = get_predict_batch(classname, class_num, sample_num_per_class,
                                                                           batch_num_per_class, test_dir)
 
-        print('batch_labels sum =', batch_labels.sum())
+
         # Step 3b: Predict the new label
         ft_list, relation_pairs = get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_num,
                                                                           feature_encoder, gpu, sample_num_per_class,
                                                                           samples, use_gpu)
         output = relation_network(relation_pairs, ft_list).view(-1, class_num, 224, 224)
         # Step 3c: Evaluate the new label
-        print('output sum =', output.sum())
+
         classiou, stick, batch_index = compute_iou_for_query(batch_labels, batches, output, stick, classname)
         classiou_dict[classname] = classiou
 
