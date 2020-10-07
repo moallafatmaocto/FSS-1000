@@ -4,4 +4,4 @@ torch
 torchvision
 click
 opencv-python
-
+json

@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -37,7 +38,10 @@ def main(class_num, sample_num_per_class, batch_num_per_class, model_save_path,
         classiou_dict[classname] = classiou
     print(
         f'Mean IoU for FSS-100 with {class_num} way {sample_num_per_class} shot = {np.mean(list(classiou_dict.values()))}')
-    torch.save(classiou_dict, f"{result_dir}/class_iou_{class_num}_way_{sample_num_per_class}_shot.txt")
+    json_file = json.dumps(classiou_dict)
+    f = open(f"{result_dir}/class_iou_{class_num}_way_{sample_num_per_class}_shot.txt", "w")
+    f.write(json_file)
+    f.close()
 
 
 def init_encoder_and_network_for_predict(model_save_path, gpu, use_gpu, class_num, sample_num_per_class, save_episode):
@@ -47,7 +51,7 @@ def init_encoder_and_network_for_predict(model_save_path, gpu, use_gpu, class_nu
         feature_encoder.cuda(gpu)
         relation_network.cuda(gpu)
     relevent_models = [file_name for file_name in os.listdir(model_save_path) if
-                       str(class_num) in file_name and str(sample_num_per_class) in file_name and '_'+str(
+                       str(class_num) in file_name and '_'+str(
                            save_episode) in file_name]
     relation_networks_paths = [f"{model_save_path}/{file_name}" for file_name in relevent_models if
                                file_name.startswith('relation_network_')]

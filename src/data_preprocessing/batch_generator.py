@@ -1,6 +1,6 @@
 import os
 import random
-import numpy as np
+
 import cv2
 
 from src.data_preprocessing.transform_init_tensors import init_arrays, normalize_and_transpose, import_image_and_label, \
@@ -35,7 +35,7 @@ def get_training_batch(class_num, sample_num_per_class, batch_num_per_class,
 
             if j < sample_num_per_class:
                 support_images[j] = image
-                support_labels[j][0] = label
+                support_labels[j][class_cnt] = label
             else:
                 query_images[j - sample_num_per_class] = image
                 query_labels[j - sample_num_per_class][class_cnt] = label
@@ -56,7 +56,7 @@ def get_autolabel_batch(testname, class_num, sample_num_per_class,
 
     imgnames = os.listdir(f"./{support_dir}/label")
     testnames = os.listdir(test_dir)
-    indexs = list(range(0, len(imgnames)))[0:5]
+    indexs = list(range(0, len(imgnames)))[0:sample_num_per_class]
     chosen_index = indexs
     j = 0
     for k in chosen_index:
@@ -81,7 +81,7 @@ def get_autolabel_batch(testname, class_num, sample_num_per_class,
     return support_images_tensor, support_labels_tensor, query_images_tensor, query_labels_tensor
 
 
-def get_predict_batch(class_name,  class_num, sample_num_per_class,
+def get_predict_batch(class_name, class_num, sample_num_per_class,
                       batch_num_per_class, test_dir):
     class_cnt, query_images, query_labels, support_images, support_labels, zeros = init_arrays(class_num,
                                                                                                sample_num_per_class,
