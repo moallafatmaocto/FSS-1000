@@ -72,7 +72,6 @@ def compute_iou_for_query(batch_labels, batches, output, stick, testname):
 
         pred[pred <= 0.5] = 0
         pred[pred > 0.5] = 1
-        print('pred sum', np.sum(pred))
         # vis
         demo = cv2.cvtColor(pred, cv2.COLOR_GRAY2RGB) * 255
         stick[224 * 3:224 * 4, 224 * i:224 * (i + 1), :] = demo.copy()
@@ -80,10 +79,6 @@ def compute_iou_for_query(batch_labels, batches, output, stick, testname):
         testlabel = batch_labels.numpy()[i][0].astype(bool)
         testlabel[testlabel <= 0.5] = 0
         testlabel[testlabel > 0.5] = 1
-        print('testlabel sum', np.sum(testlabel))
-
-        #pred = pred.astype(bool)
-        #testlabel = testlabel.astype(bool)
         # compute IOU
         iou_score = iou(pred, testlabel)
         classiou += iou_score

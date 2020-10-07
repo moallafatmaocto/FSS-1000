@@ -1,9 +1,11 @@
 import click
-
+import time
 from src.data_preprocessing.config import TRAIN_DATA_PATH
 from src.train_module.training import main
 import warnings
+
 warnings.filterwarnings("ignore")
+
 
 @click.command()
 @click.option('--finetune', default=True, type=bool, help='Finetuning the results')
@@ -32,11 +34,13 @@ def entry_point(finetune: bool, feature_model: str, relation_model: str, learnin
                 batch_num_per_class: int, train_result_path: str, model_save_path: str,
                 result_save_freq: int, display_query: int, model_save_freq: int, gpu: int, load_imagenet: bool,
                 use_gpu: bool, train_data_path: str):
+    start = time.time()
     main(finetune, feature_model, relation_model, learning_rate,
          start_episode, nbr_episode, class_num,
          sample_num_per_class,
          batch_num_per_class, train_result_path, model_save_path,
          result_save_freq, display_query, model_save_freq, gpu, load_imagenet, use_gpu, train_data_path)
+    print(f'Training ended in {(time.time() - start) / 3600.0} hours')
 
 
 if __name__ == '__main__':
