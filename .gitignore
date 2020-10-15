@@ -12,3 +12,7 @@ imgs/example_demo/
 imgs/example_octo/
 imgs/example_ChestXR/
 data_pascal5i/
+live_demo_result_ChestXR/
+live_demo_result_eiffel/
+live_demo_result_octo/
+.ipynb_checkpoints/

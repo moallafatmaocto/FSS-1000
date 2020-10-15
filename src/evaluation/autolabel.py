@@ -24,7 +24,7 @@ def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path
     # Step 3: Testing
     print("Testing...")
     testnames = os.listdir('%s' % test_dir)
-    print(testnames)
+    #print(testnames)
     print('%s testing images in class %s' % (len(testnames), classname))
     for cnt, testname in enumerate(testnames):
         if cv2.imread('%s/%s' % (test_dir, testname)) is None:
@@ -84,7 +84,7 @@ def compute_iou_for_query(batch_labels, batches, output, stick, testname):
         iou_score = iou(pred, testlabel)
         classiou += iou_score
     classiou /= 1.0 * batches.size()[0]
-    print('iou=%0.4f for %s' % (classiou, testname))
+    #print('iou=%0.4f for %s' % (classiou, testname))
     return classiou, stick, i
 
 
