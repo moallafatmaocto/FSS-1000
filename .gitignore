@@ -1,4 +1,7 @@
 result/
+result_octo/
+result_ChestXR/
+result_demo/
 models/
 results_predicted_images_masks/
 relation_network_trained/
@@ -8,3 +11,4 @@ data/
 imgs/example_demo/
 imgs/example_octo/
 imgs/example_ChestXR/
+data_pascal5i/

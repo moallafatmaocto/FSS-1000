@@ -10,7 +10,7 @@ from src.network import CNNEncoder, RelationNetwork
 
 
 def main(class_num, sample_num_per_class, batch_num_per_class, model_save_path,
-         use_gpu, gpu, test_dir, result_dir,save_episode):
+         use_gpu, gpu, test_dir, result_dir, save_episode, data_name, pascal_batch):
     # Step 1: init neural networks and feature encoder
     print("init neural networks")
     feature_encoder, relation_network = init_encoder_and_network_for_predict(model_save_path, gpu, use_gpu, class_num,
@@ -19,13 +19,19 @@ def main(class_num, sample_num_per_class, batch_num_per_class, model_save_path,
     stick = np.zeros((224 * 4, 224 * 5, 3), dtype=np.uint8)
     # Step 3: Testing
     print("Testing...")
-    classnames = os.listdir(test_dir)
+    if data_name == 'FSS':
+        classnames = os.listdir(test_dir)
+    else:
+        class_list = os.listdir(f'{test_dir}/{str(pascal_batch)}/test/')
+        classnames = [class_name.split('.txt')[0] for class_name in class_list if '.txt' in class_name]
+
     classiou_dict = dict()
     for classname in classnames:
         print(f'Testing images in class {classname}')
         # Step 3a: Get samples and batches (or support and query split)
         samples, sample_labels, batches, batch_labels = get_predict_batch(classname, class_num, sample_num_per_class,
-                                                                          batch_num_per_class, test_dir)
+                                                                          batch_num_per_class, test_dir, data_name,
+                                                                          pascal_batch)
 
         # Step 3b: Predict the new label
         ft_list, relation_pairs = get_relation_pairs_and_encoded_features(batch_num_per_class, batches, class_num,
@@ -51,7 +57,7 @@ def init_encoder_and_network_for_predict(model_save_path, gpu, use_gpu, class_nu
         feature_encoder.cuda(gpu)
         relation_network.cuda(gpu)
     relevent_models = [file_name for file_name in os.listdir(model_save_path) if
-                       str(class_num) in file_name and '_'+str(
+                       str(class_num) in file_name and '_' + str(
                            save_episode) in file_name]
     relation_networks_paths = [f"{model_save_path}/{file_name}" for file_name in relevent_models if
                                file_name.startswith('relation_network_')]

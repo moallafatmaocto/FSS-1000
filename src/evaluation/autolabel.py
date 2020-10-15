@@ -24,6 +24,7 @@ def main(class_num, sample_num_per_class, batch_num_per_class, encoder_save_path
     # Step 3: Testing
     print("Testing...")
     testnames = os.listdir('%s' % test_dir)
+    print(testnames)
     print('%s testing images in class %s' % (len(testnames), classname))
     for cnt, testname in enumerate(testnames):
         if cv2.imread('%s/%s' % (test_dir, testname)) is None:

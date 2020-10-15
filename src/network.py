@@ -7,11 +7,11 @@ import torchvision.models as models
 class CNNEncoder(nn.Module):
     """docstring for ClassName"""
 
-    def __init__(self, pretrained: bool = False):
+    def __init__(self, pretrained: bool = False, class_num=1):
         super(CNNEncoder, self).__init__()
         features = list(models.vgg16_bn(pretrained=pretrained).features)
         self.layer1 = nn.Sequential(
-            nn.Conv2d(4, 64, kernel_size=3, padding=1)
+            nn.Conv2d(class_num + 3, 64, kernel_size=3, padding=1)
         )
         self.features = nn.ModuleList(features)[1:]  # .eval()
         # print (nn.Sequential(*list(models.vgg16_bn(pretrained=True).children())[0]))

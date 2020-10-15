@@ -19,10 +19,13 @@ if not sys.warnoptions:
 @click.option("-td", "--test-dir", type=str, default=TEST_DATA_PATH)
 @click.option("--result-dir", type=str, default='results_predicted_images_masks')
 @click.option("--save-episode", type=int, default=9)
+@click.option("--data-name", type=str, default='FSS')
+@click.option("--pascal-batch", type=int, default=None)
 def entry_point_predict(class_num: int, sample_num_per_class: int, batch_num_per_class: int, model_save_path: str,
-                        use_gpu: bool, gpu: int, test_dir: str, result_dir: str, save_episode: int):
+                        use_gpu: bool, gpu: int, test_dir: str, result_dir: str, save_episode: int, data_name: str,
+                        pascal_batch: int):
     main(class_num, sample_num_per_class, batch_num_per_class, model_save_path,
-         use_gpu, gpu, test_dir, result_dir, save_episode)
+         use_gpu, gpu, test_dir, result_dir, save_episode, data_name, pascal_batch)
 
 
 if __name__ == '__main__':
