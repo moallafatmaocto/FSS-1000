@@ -40,12 +40,11 @@ In the same way, we can test on several batches of pascal (0,1,2,3)
 ```
 python -m src.entrypoints.evaluate_predict --save-episode 499999 -K 5 -N 1 -batch 1 --use-gpu True --data-name "pascal-5i" --pascal-batch 1 --result-dir results_predicted_images_masks --test-dir 'data_pascal5i/1/test/'
 ```
-### Application to pre-labeling
+## Application to pre-labeling
 ```
  python -m src.entrypoints.entrypoint_autolabel -K 5 -N 1 -batch 1 --model-save-path 'models'  -sd 'imgs/example/support' -td 'imgs/example/query' --result-dir 'result' --use-gpu True -encoder 'relation_network_trained/feature_encoder_499999_1_way_5shot.pkl'   -network 'relation_network_trained/relation_network_499999_1_way_5shot.pkl'
 
 ```
-
 ### Examples: results on pre-labeling
 
 <img src='octo.png' align="left">
