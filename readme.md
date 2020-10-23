@@ -49,3 +49,9 @@ python -m src.entrypoints.evaluate_predict --save-episode 499999 -K 5 -N 1 -batc
 
 <img src='octo.png' align="left">
 <img src='eiffel.png' align="right">
+
+## Extension to multi-class
+
+Coming soon ...
+Please Check [my other repository](https://github.com/moallafatmaocto/fss-multiclass) on the same subject.
+
