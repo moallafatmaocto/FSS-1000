@@ -1,4 +1,4 @@
-# FSS-1000: A 1000 Class Dataset for Few-shot Segmentation 
+# Few-Shot Learning for Image Segmentation
 
 <img src='examples/example.png' align="left">
 
